@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paster</title>
+</head>
+
+<body>
+    <div id="poster" class="poster">
+        <h1>poster</h1>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"> <br>
+        <label for="paste">Paste:</label>
+        <textarea style="vertical-align: top;" id="paste" name="paste"></textarea> <br>
+        <button id="submit">Submit</button>
+    </div>
+
+    <div id="putter" class="putter">
+        <h1>putter</h1>
+        <label for="id">ID:</label>
+        <input type="number" id="id" name="id"> <br>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"> <br>
+        <label for="paste">Paste:</label>
+        <textarea style="vertical-align: top;" id="paste" name="paste"></textarea> <br>
+        <button id="submit">Submit</button>
+    </div>
+
+    <div class="getter" id="getter">
+        <h1>getter</h1>
+        <label for="id">ID:</label>
+        <input type="number" id="id" name="id">
+        <button id="submit">Submit</button>
+    </div>
+
+    <div class="deleter" id="deleter">
+        <h1>deleter</h1>
+        <label for="id">ID:</label>
+        <input type="number" id="id" name="id">
+        <button id="submit">Submit</button>
+    </div>
+
+    <div class="status">
+        <span id="status"></span> <br>
+        <span id="status_name"></span> <br>
+        <span id="status_paste"></span> <br>
+    </div>
+
+    <script>
+        const poster = document.getElementById("poster");
+        const getter = document.getElementById("getter");
+        const deleter = document.getElementById("deleter");
+        const putter = document.getElementById("putter");
+        const status = document.getElementById("status");
+        const name_obj = document.getElementById("status_name");
+        const paste_obj = document.getElementById("status_paste");
+
+
+        async function post() {
+            let response = await fetch("http://localhost:8080/pastes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "name": poster.querySelector("#name").value,
+                    "paste": poster.querySelector("#paste").value
+                })
+            });
+
+            let json = await response.json();
+
+            return json
+        }
+
+        async function get() {
+            const id = getter.querySelector("#id").value
+            if (id) {
+                let response = await fetch(`http://localhost:8080/pastes/${id}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                let json = await response.json();
+
+                return json
+            } else {
+                return { error: "ID not found" }
+            }
+        }
+
+        async function paste_delete() {
+            const id = deleter.querySelector("#id").value
+
+            if (id) {
+                let response = await fetch(`http://localhost:8080/pastes/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+
+                let json = await response.json()
+
+                return json
+            } else {
+                return { error: "ID not found" }
+            }
+        }
+
+        async function put() {
+            let response = await fetch(`http://localhost:8080/pastes/${putter.querySelector("#id").value}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "name": putter.querySelector("#name").value,
+                    "paste": putter.querySelector("#paste").value
+                })
+            });
+
+            let json = await response.json();
+
+            return json
+        }
+
+        poster.querySelector("#submit").addEventListener("click", async (event) => {
+            let res = await post(); if (!res.error) {
+                name_obj.textContent = ``
+                paste_obj.textContent = ``
+                status.textContent = `Success! Paste with ID ${res.id} created!`
+            } else {
+                name_obj.textContent = ``
+                paste_obj.textContent = ``
+                status.textContent = `Failure to post! Reason: ${res.error}`
+            }
+        });
+        getter.querySelector("#submit").addEventListener("click", async (event) => {
+            let res = await get(); if (!res.error) {
+                status.textContent = `Success! Paste acquired!`
+                name_obj.textContent = `Name: ${res.name}`
+                paste_obj.textContent = `Paste: ${res.paste}`
+            } else {
+                name_obj.textContent = ``
+                paste_obj.textContent = ``
+                status.textContent = `Failure to get! Reason: ${res.error}`
+            }
+        });
+        deleter.querySelector("#submit").addEventListener("click", async (event) => {
+            let res = await paste_delete(); if (!res.error) {
+                name_obj.textContent = ``
+                paste_obj.textContent = ``
+                status.textContent = `Success! Paste with ID ${res.id} deleted!`
+            } else {
+                name_obj.textContent = ``
+                paste_obj.textContent = ``
+                status.textContent = `Failure to delete! Reason: ${res.error}`
+            }
+        });
+        putter.querySelector("#submit").addEventListener("click", async (event) => {
+            let res = await put(); if (!res.error) {
+                name_obj.textContent = ``
+                paste_obj.textContent = ``
+                status.textContent = `Success! Paste with ID ${res.id} replaced!`
+            } else {
+                name_obj.textContent = ``
+                paste_obj.textContent = ``
+                status.textContent = `Failure to put! Reason: ${res.error}`
+            }
+        });
+    </script>
+</body>
+
+</html>
